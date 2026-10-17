@@ -1,84 +1,85 @@
 package org.firstinspires.ftc.teamcode
 
-import com.pedropathing.geometry.Pose
-import dev.nextftc.core.units.deg
-import dev.nextftc.core.units.m
-import dev.nextftc.extensions.pedro.PedroComponent
-import org.firstinspires.ftc.teamcode.subsystems.LimeLight
-import java.util.function.Supplier
-import kotlin.math.abs
+import com.bylazar.configurables.annotations.Configurable
+import com.pedropathing.math.Pose
 import kotlin.math.atan2
-import kotlin.math.sqrt
+import kotlin.math.hypot
+import dev.nextftc.core.units.deg
+import org.firstinspires.ftc.teamcode.subsystems.Turret
 
+@Configurable
 object AutoAimCalcs {
 
-    val goalPos = Pose(16.3, 131.8)
+    @JvmField var IdleRPM = 2400
 
-    var pose = Pose()
+    enum class HiveTip {
+        LEFT_UP,
+        RIGHT_UP
+    }
 
-    fun calculatePower(shooting: Boolean): Double {
-        val currentPos = PedroComponent.follower.pose
-        var distance = 0.0
+    @JvmField
+    var hiveTip = HiveTip.RIGHT_UP
 
-        distance = if (!LimeLight.ll.latestResult.fiducialResults.any { it.fiducialId == if (GlobalVars.RED_ALLIANCE) 24 else 20 } ) {
-            if (GlobalVars.RED_ALLIANCE) {
-                sqrt(((goalPos.mirror().x - currentPos.x) * (goalPos.mirror().x - currentPos.x)) + ((goalPos.mirror().y - currentPos.y) * (goalPos.mirror().y - currentPos.y)))
-            } else {
-                sqrt(((goalPos.x - currentPos.x) * (goalPos.x - currentPos.x)) + ((goalPos.y - currentPos.y) * (goalPos.y - currentPos.y)))
+
+    val redCellRight = Pose(0.0,0.0)
+    val redCellLeft = Pose(0.0,0.0)
+
+    val blueCellRight = Pose(0.0,0.0)
+    val blueCellLeft = Pose(0.0,0.0)
+
+
+
+    data class AimSolution(
+        val turretAngleDeg: Double = 0.0,
+        val distanceInches: Double = 0.0
+    )
+
+    data class ShotPoint(
+        val distance: Double = 0.0,
+        val shotRPM: Int = 0
+    )
+
+    val dataPoints = List(
+        ShotPoint()
+    )
+
+    fun calculateAim(robotPose: Pose): AimSolution {
+        val target = when (GlobalVars.RED_ALLIANCE) {
+            true -> when (hiveTip) {
+                HiveTip.LEFT_UP -> redCellLeft
+                HiveTip.RIGHT_UP -> redCellRight
             }
-        } else {
-            abs(LimeLight.ll.latestResult.fiducialResults[0].robotPoseTargetSpace.position.z.m.inIn)
+
+            false -> when (hiveTip) {
+                HiveTip.LEFT_UP -> blueCellLeft
+                HiveTip.RIGHT_UP -> blueCellRight
+            }
         }
 
+        val dx = target.x() - robotPose.x()
+        val dy = target.y() - robotPose.y()
 
-        return if (shooting) {
-            3805.0 //(0.0937119*(distance*distance)) + (-2.1386 * distance) + 2042.09419
+        val aimFieldCoords = Math.toDegrees(atan2(dy, dx))
+
+        val aimRobotCoords = aimFieldCoords -
+                Math.toDegrees(robotPose.heading())
+
+        // Normalized -180 to 180
+        val normalizedAngle =
+            ((aimRobotCoords + 180.0) % 360.0 + 360.0) % 360.0 - 180.0
+
+        return AimSolution(
+            turretAngleDeg = normalizedAngle,
+            distanceInches = hypot(dx, dy)
+        )
+    }
+
+    fun calculateRPM(shooting: Boolean, target: Double): Int {
+        if (shooting) {
+
         } else {
-            1000.0
+            return IdleRPM
         }
     }
 
-    fun calculateAimAngle(): Double {
-        val currentPos = PedroComponent.follower.pose
-
-
-
-        if (LimeLight.ll.latestResult.fiducialResults.any { it.fiducialId == if (GlobalVars.RED_ALLIANCE) 24 else 20 } ) {
-            if (PedroComponent.follower.pose.y <= 48.0) {
-                val heading = PedroComponent.follower.heading - LimeLight.getTX() + if (GlobalVars.RED_ALLIANCE) { 1.deg.inRad } else { -1.deg.inRad }
-                pose = PedroComponent.follower.pose.withHeading(heading)
-            } else if (PedroComponent.follower.pose.y >= 130.0) {
-                val heading = PedroComponent.follower.heading - LimeLight.getTX() + if (GlobalVars.RED_ALLIANCE) { -1.deg.inRad } else { 1.deg.inRad }
-                pose = PedroComponent.follower.pose.withHeading(heading)
-            } else {
-                val heading = PedroComponent.follower.heading - LimeLight.getTX()
-                pose = PedroComponent.follower.pose.withHeading(heading)
-            }
-        }
-
-        if (PedroComponent.follower.pose.distanceFrom(pose) < 10.0) {
-            return pose.heading
-        } else {
-            if (GlobalVars.RED_ALLIANCE) {
-                val dx = 144 - currentPos.x
-                val dy = 144 - currentPos.y
-
-                return atan2(dy, dx)
-            } else {
-                val dx = 0 - currentPos.x
-                val dy = 144 - currentPos.y
-
-                return atan2(dy, dx)
-            }
-        }
-    }
-
-}
-
-class PIDJoystickBlend(val joystick: Supplier<Double>, val pid: Supplier<Double>): Supplier<Double> {
-    var usePID = false
-
-    override fun get(): Double {
-        return if (usePID) pid.get() else joystick.get()
-    }
 }

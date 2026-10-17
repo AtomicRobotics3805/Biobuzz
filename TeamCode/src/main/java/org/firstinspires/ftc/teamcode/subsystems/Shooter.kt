@@ -13,24 +13,25 @@ import dev.nextftc.core.commands.utility.LambdaCommand
 import dev.nextftc.core.subsystems.Subsystem
 import dev.nextftc.hardware.impl.MotorEx
 import org.firstinspires.ftc.teamcode.AutoAimCalcs
+import org.firstinspires.ftc.teamcode.GlobalVars
 import org.firstinspires.ftc.teamcode.GlobalVars.SHOOTING
 import kotlin.math.roundToInt
 
 @Configurable
 object Shooter : Subsystem {
 
-    var shooterSpeedNoRatio = 2400
+    var shooterRPM = 2400
 
     val ticksPerRev = 112/4
 
-    val motor1 = MotorEx("shooter1")
+    val motor = MotorEx("shooter")
 
 
     @JvmField var basicFFCoefficients = BasicFeedforwardParameters(0.0005, 0.0, 0.055)
     @JvmField var velPidCoefficients = PIDCoefficients(0.006, 0.0, 0.018)
 
     override fun initialize() {
-        motor1.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+        motor.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         controller.goal = KineticState()
     }
 
@@ -47,7 +48,7 @@ object Shooter : Subsystem {
         if (loopCount >= loopThreshold) {
             true
         } else {
-            if (motor1.velocity > (controller.goal.velocity-10) && motor1.velocity < (controller.goal.velocity + 60)) {
+            if (motor.velocity > (controller.goal.velocity-10) && motor.velocity < (controller.goal.velocity + 60)) {
                 loopCount++
             } else {
                 loopCount = 0
@@ -60,7 +61,7 @@ object Shooter : Subsystem {
     val start: Command
         get() {
             return LambdaCommand().setIsDone {
-                motor1.velocity > controller.goal.velocity
+                motor.velocity > controller.goal.velocity
             }.setStart {
                 SHOOTING = true
             }.requires(this)
@@ -74,13 +75,13 @@ object Shooter : Subsystem {
         }
 
     override fun periodic() {
-        motor1.power = controller.calculate(motor1.state)
-        shooterSpeedNoRatio = AutoAimCalcs.calculatePower(SHOOTING).roundToInt()
-        controller.goal = KineticState(0.0, (shooterSpeedNoRatio / 60.0) * ticksPerRev)
+        motor.power = controller.calculate(motor.state)
+        shooterRPM = AutoAimCalcs.calculateRPM(SHOOTING, GlobalVars.SHOOTER_AIM.distanceInches)
+        controller.goal = KineticState(0.0, (shooterRPM / 60.0) * ticksPerRev)
 
-        RobotLog.d("Shooter power: ", motor1.power)
-        RobotLog.d("Target vel: ", shooterSpeedNoRatio)
-        RobotLog.d("Current vel", motor1.velocity)
+        RobotLog.d("Shooter power: ", motor.power)
+        RobotLog.d("Target vel: ", shooterRPM)
+        RobotLog.d("Current vel", motor.velocity)
     }
 
 }

@@ -1,13 +1,11 @@
 package org.firstinspires.ftc.teamcode
 
 import com.bylazar.configurables.annotations.Configurable
-import com.pedropathing.geometry.Pose
+import com.pedropathing.math.Pose
 
 @Configurable
 object GlobalVars {
 
-
-    val GOAL_POS = Pose(16.3, 131.8)
 
     @JvmField
     var RED_ALLIANCE = false
@@ -19,8 +17,8 @@ object GlobalVars {
     var SHOOTING = false
 
     @JvmField
-    var SHOOT_1_BALL_DELAY = 1.0
+    var SHOOTER_AIM = AutoAimCalcs.AimSolution()
 
     @JvmField
-    var SHOOT_3_BALL_DELAY = 1.0
+    var AUTO_AIM = false
 }
