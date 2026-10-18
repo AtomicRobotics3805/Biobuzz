@@ -39,8 +39,10 @@ object AutoAimCalcs {
         val shotRPM: Int = 0
     )
 
-    val dataPoints = List(
-        ShotPoint()
+    val dataPoints = List<ShotPoint>(
+        1, {
+            ShotPoint()
+        }
     )
 
     fun calculateAim(robotPose: Pose): AimSolution {
@@ -76,7 +78,7 @@ object AutoAimCalcs {
 
     fun calculateRPM(shooting: Boolean, target: Double): Int {
         if (shooting) {
-
+            return IdleRPM
         } else {
             return IdleRPM
         }
