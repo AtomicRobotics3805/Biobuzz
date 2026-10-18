@@ -33,6 +33,7 @@ object Shooter : Subsystem {
     override fun initialize() {
         motor.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         controller.goal = KineticState()
+        AutoAimCalcs.generateShooterEquation()
     }
 
     @JvmField
