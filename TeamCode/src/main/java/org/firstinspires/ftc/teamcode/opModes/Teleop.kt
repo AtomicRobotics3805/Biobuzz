@@ -66,6 +66,16 @@ class Teleop : NextFTCOpMode() {
         driverControlled()
 
 
+        Gamepads.gamepad1.rightStickButton.whenBecomesTrue {
+            if (GlobalVars.RED_ALLIANCE) {
+                PedroComponent.follower.setPose(PedroComponent.follower.pose().withHeading(0.0))
+            } else {
+                PedroComponent.follower.setPose(PedroComponent.follower.pose().withHeading(180.0))
+            }
+        } // Reset IMU
+
+        Gamepads.gamepad1.leftStickButton.whenBecomesTrue { PedroComponent.follower.setPose(AutoAimCalcs.resetLocalization(
+            PedroComponent.follower.pose())) } // Reset Localization
 
         Gamepads.gamepad1.rightTrigger.asButton { it >= 0.5 }.whenBecomesTrue { Intake.start() }.whenBecomesFalse { Intake.slowIn() }
 

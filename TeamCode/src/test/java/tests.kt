@@ -139,7 +139,7 @@ class AutoAimCalcsTest {
         AutoAimCalcs.generateShooterEquation()
 
         assertEquals(200.0, AutoAimCalcs.shooterEquation.first, 1e-9)
-        assertEquals(803.3333333333334, AutoAimCalcs.shooterEquation.second, 1e-9)
+        assertEquals(803.333333333333, AutoAimCalcs.shooterEquation.second, 1e-9)
     }
 
     @Test

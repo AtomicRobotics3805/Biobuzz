@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode
 
 import com.bylazar.configurables.annotations.Configurable
 import com.pedropathing.math.Pose
+import com.qualcomm.robotcore.hardware.IMU
 import kotlin.math.atan2
 import kotlin.math.hypot
 import dev.nextftc.core.units.deg
@@ -114,6 +115,28 @@ object AutoAimCalcs {
 
         shooterEquation = Pair(slope,intercept)
     }
+
+    fun resetLocalization(robotPose: Pose): Pose {
+        val xOffset = 8.18 // Half the length
+        val yOffset = 7.21 // Half the width
+
+        var returnPose = Pose(0.0,0.0, robotPose.heading())
+
+        if (robotPose.x() > 72.0) {
+            returnPose = returnPose.withX(144.0 - xOffset)
+        } else {
+            returnPose = returnPose.withX(xOffset)
+        }
+
+        if (robotPose.y() > 72.0) {
+            returnPose = returnPose.withY(144.0 - yOffset)
+        } else {
+            returnPose = returnPose.withY(yOffset)
+        }
+
+        return returnPose
+    }
+
 
 
 }
