@@ -6,7 +6,6 @@ import com.pedropathing.math.Pose
 @Configurable
 object GlobalVars {
 
-
     @JvmField
     var RED_ALLIANCE = false
 

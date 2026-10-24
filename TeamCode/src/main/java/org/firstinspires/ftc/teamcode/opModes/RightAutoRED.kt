@@ -29,7 +29,7 @@ class RightAutoRED : NextFTCOpMode() {
         telemetry = JoinedTelemetry(PanelsTelemetry.ftcTelemetry, telemetry)
         GlobalVars.RED_ALLIANCE = true
         Paths.initialize()
-        PedroComponent.follower.setPose(Paths.rightStart)
+        PedroComponent.follower.setPose(Paths.right1Start)
     }
 
     override fun onStartButtonPressed() {

@@ -117,8 +117,8 @@ object AutoAimCalcs {
     }
 
     fun resetLocalization(robotPose: Pose): Pose {
-        val xOffset = 8.18 // Half the length
-        val yOffset = 7.21 // Half the width
+        val xOffset = 8.18 // Half the length of the robot
+        val yOffset = 7.21 // Half the width of the robot
 
         var returnPose = Pose(0.0,0.0, robotPose.heading())
 

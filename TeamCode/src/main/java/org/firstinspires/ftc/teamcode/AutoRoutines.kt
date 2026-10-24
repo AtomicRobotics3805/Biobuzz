@@ -4,9 +4,6 @@ import dev.nextftc.core.commands.delays.Delay
 import dev.nextftc.core.commands.groups.SequentialGroup
 import dev.nextftc.core.units.deg
 import dev.nextftc.extensions.pedro.FollowPath
-import dev.nextftc.extensions.pedro.PedroComponent
-import dev.nextftc.extensions.pedro.TurnBy
-import org.firstinspires.ftc.teamcode.subsystems.Intake
 import org.firstinspires.ftc.teamcode.subsystems.MechanismRoutines
 import org.firstinspires.ftc.teamcode.subsystems.Shooter
 
