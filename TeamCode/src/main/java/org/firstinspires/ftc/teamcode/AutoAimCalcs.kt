@@ -2,11 +2,8 @@ package org.firstinspires.ftc.teamcode
 
 import com.bylazar.configurables.annotations.Configurable
 import com.pedropathing.math.Pose
-import com.qualcomm.robotcore.hardware.IMU
 import kotlin.math.atan2
 import kotlin.math.hypot
-import dev.nextftc.core.units.deg
-import org.firstinspires.ftc.teamcode.subsystems.Turret
 import kotlin.math.roundToInt
 
 @Configurable
@@ -45,7 +42,8 @@ object AutoAimCalcs {
     )
 
     val dataPoints = mutableListOf<ShotPoint>(
-            ShotPoint()
+            ShotPoint(0.0,0),
+        ShotPoint(1.0, 100)
         )
 
     fun calculateAim(robotPose: Pose): AimSolution {

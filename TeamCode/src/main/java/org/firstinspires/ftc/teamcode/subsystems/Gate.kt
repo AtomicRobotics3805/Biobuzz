@@ -2,27 +2,29 @@ package org.firstinspires.ftc.teamcode.subsystems
 
 import com.bylazar.configurables.annotations.Configurable
 import com.qualcomm.robotcore.util.RobotLog
-import dev.nextftc.core.commands.utility.InstantCommand
-import dev.nextftc.core.subsystems.Subsystem
-import dev.nextftc.hardware.impl.ServoEx
+import dev.nextftc.hardware.actuators.NextServo
+import dev.nextftc.robot.Mechanism
+import org.firstinspires.ftc.teamcode.Logger
 
 @Configurable
-object Gate : Subsystem {
-
-
-    private val servo = ServoEx("gate")
+object Gate : Mechanism {
+    val servo = NextServo("gate")
 
     @JvmField
-    var closePos = 0.78
+    var closePos = 0.4
     @JvmField
-    var openPos = 0.58
+    var openPos = 0.1
+    @JvmField
+    var fixProngPos = 0.3
 
-    val open = InstantCommand { servo.position = openPos }.setRequirements(this)
 
-    val close = InstantCommand { servo.position = closePos }.setRequirements(this)
+    fun open() = instant { servo.position = openPos }
+    fun close() = instant { servo.position = closePos }
+
+    fun fixProng() = instant { servo.position = fixProngPos }
 
     override fun periodic() {
-        RobotLog.d(
+        Logger.addData(
             "Gate Pos: ", if (servo.position == openPos) {
                 "open"
             } else {
@@ -30,6 +32,4 @@ object Gate : Subsystem {
             }
         )
     }
-
-
-    }
+}

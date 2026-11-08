@@ -20,4 +20,10 @@ object GlobalVars {
 
     @JvmField
     var AUTO_AIM = false
+
+    @JvmField
+    var AUTO_DISTANCING = false
+
+    @JvmField
+    var OPMODE_START_TIME: Long = 0L
 }

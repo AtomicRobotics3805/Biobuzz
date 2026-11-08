@@ -1,96 +1,68 @@
 package org.firstinspires.ftc.teamcode.opModes
 
-import com.bylazar.configurables.annotations.Configurable
-import com.bylazar.telemetry.JoinedTelemetry
-import com.bylazar.telemetry.PanelsTelemetry
+import com.bylazar.gamepad.PanelsGamepad
+import com.pedropathing.follower.ManualDrive
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import dev.nextftc.core.components.BindingsComponent
-import dev.nextftc.core.components.SubsystemComponent
-import dev.nextftc.core.units.deg
-import dev.nextftc.extensions.pedro.PedroComponent
-import dev.nextftc.ftc.Gamepads
-import dev.nextftc.ftc.NextFTCOpMode
-import dev.nextftc.ftc.components.BulkReadComponent
-import dev.nextftc.ftc.components.LoopTimeComponent
-import dev.nextftc.hardware.driving.FieldCentric
-import dev.nextftc.hardware.driving.MecanumDriverControlled
-import dev.nextftc.hardware.impl.MotorEx
-import org.firstinspires.ftc.teamcode.AutoAimCalcs
+import com.qualcomm.robotcore.hardware.Gamepad
+import dev.nextftc.hardware.actuators.NextMotor
+import dev.nextftc.robot.drive.mecanumDriveFieldCentric
+import dev.nextftc.robot.opmode.NextOpMode
+import dev.nextftc.robot.opmode.NextTeleop
+import org.firstinspires.ftc.teamcode.Allanite
+import dev.nextftc.robot.triggers.CommandGamepad
+import org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion
+import org.firstinspires.ftc.teamcode.Allanite.follower
 import org.firstinspires.ftc.teamcode.GlobalVars
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants
+import org.firstinspires.ftc.teamcode.Logger
+import org.firstinspires.ftc.teamcode.pedro.Constants
+import org.firstinspires.ftc.teamcode.subsystems.Drivetrain
 import org.firstinspires.ftc.teamcode.subsystems.Gate
+import org.firstinspires.ftc.teamcode.subsystems.Gate.instant
 import org.firstinspires.ftc.teamcode.subsystems.Intake
 import org.firstinspires.ftc.teamcode.subsystems.MechanismRoutines
-import org.firstinspires.ftc.teamcode.subsystems.Shooter
-import org.firstinspires.ftc.teamcode.subsystems.Turret
 
-@Configurable
-@TeleOp(name = "Teleop")
-class Teleop : NextFTCOpMode() {
-    init {
-        addComponents(
-            SubsystemComponent(Intake, Shooter, Gate, Turret),
-            BulkReadComponent,
-            PedroComponent(Constants::create),
-            BindingsComponent,
-            LoopTimeComponent()
-        )
-        telemetry = JoinedTelemetry(PanelsTelemetry.ftcTelemetry, telemetry)
+@NextTeleop("TeleOp")
+class TeleOp(val robot: Allanite) : NextOpMode(robot) {
+
+    val g1 = PanelsGamepad.firstManager
+    val driver = CommandGamepad(gamepad1)
+    val operator = CommandGamepad(gamepad2)
+
+
+    override fun start() {
+        Allanite.globalOnStart()
+        buildDriverControls()
+        Logger.setTelemetry(telemetry)
     }
 
-
-    override fun onInit() {
-    }
-
-    private val frontLeftMotor = MotorEx("LF").brakeMode()
-    private val frontRightMotor = MotorEx("RF").brakeMode()
-    private val backLeftMotor = MotorEx("LB").brakeMode()
-    private val backRightMotor = MotorEx("RB").brakeMode()
-
-
-    override fun onStartButtonPressed() {
-        PedroComponent.follower.setPose(GlobalVars.FINAL_AUTO_POS)
-        Gate.close()
-
-        val driverControlled = MecanumDriverControlled(
-            frontLeftMotor,
-            frontRightMotor,
-            backLeftMotor,
-            backRightMotor,
-            -Gamepads.gamepad1.leftStickY,
-            Gamepads.gamepad1.leftStickX,
-            Gamepads.gamepad1.rightStickX,
-            FieldCentric { PedroComponent.follower.pose().heading().deg }
-        )
-
-        driverControlled()
+    fun buildDriverControls() {
+        Drivetrain.mecanumDriveFieldCentric(
+            Drivetrain.frontLeft,
+            Drivetrain.frontRight,
+            Drivetrain.backLeft,
+            Drivetrain.backRight,
+            Drivetrain.imu,
+            gamepad1
+        ).schedule()
 
 
-        Gamepads.gamepad1.rightStickButton.whenBecomesTrue {
-            if (GlobalVars.RED_ALLIANCE) {
-                PedroComponent.follower.setPose(PedroComponent.follower.pose().withHeading(0.0))
-            } else {
-                PedroComponent.follower.setPose(PedroComponent.follower.pose().withHeading(180.0))
+
+        driver.rightStickButton.toggleOnTrue(
+            instant {
+                Drivetrain.imu.resetYaw()
             }
-        } // Reset IMU
+        ) // Reset IMU
 
-        Gamepads.gamepad1.leftStickButton.whenBecomesTrue { PedroComponent.follower.setPose(AutoAimCalcs.resetLocalization(
-            PedroComponent.follower.pose())) } // Reset Localization
+        driver.rightTrigger.isOver(0.5).toggleOnTrue( Intake.start() ).toggleOnFalse( Intake.slowIn() )
 
-        Gamepads.gamepad1.rightTrigger.asButton { it >= 0.5 }.whenBecomesTrue { Intake.start() }.whenBecomesFalse { Intake.slowIn() }
+        driver.leftTrigger.isOver(0.5).toggleOnTrue( Intake.reverse() ).toggleOnFalse( Intake.slowIn() )
 
-        Gamepads.gamepad1.leftTrigger.asButton { it >= 0.5 }.whenBecomesTrue { Intake.reverse() }.whenBecomesFalse { Intake.slowIn() }
+        driver.leftBumper.toggleOnTrue(Gate.open() ).toggleOnFalse( Gate.close() )
 
-        Gamepads.gamepad1.leftBumper.whenBecomesTrue { MechanismRoutines.BeginShoot() }.whenBecomesFalse { MechanismRoutines.EndShoot() }
+        driver.a.toggleOnTrue(Gate.fixProng()).toggleOnFalse(Gate.close())
+
     }
 
-    override fun onUpdate() {
-        GlobalVars.SHOOTER_AIM = AutoAimCalcs.calculateAim(PedroComponent.follower.pose())
+    override fun end() {
     }
-
-
-
-
-
-
 }

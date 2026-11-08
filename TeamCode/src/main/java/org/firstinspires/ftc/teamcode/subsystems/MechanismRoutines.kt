@@ -1,20 +1,20 @@
 package org.firstinspires.ftc.teamcode.subsystems
 
-import dev.nextftc.core.commands.delays.Delay
-import dev.nextftc.core.commands.groups.SequentialGroup
+import dev.nextftc.robot.coroutine.command
+
 object MechanismRoutines {
 
-    val BeginShoot = SequentialGroup(
-        Shooter.start,
-        Gate.open,
-        Delay(0.2),
-        Intake.start
-    )
+    fun BeginShoot() = command {
+        await(Shooter.start())
+        await(command { Shooter.motor.velocityPID.error < 100.0})
+        await(Gate.open())
+        wait(0.2)
+        await(Intake.start())
+    }
 
-    val EndShoot = SequentialGroup(
-        Intake.stop,
-        Gate.close,
-        Shooter.stop
-    )
-
+    fun EndShoot() = command {
+        await(Intake.stop())
+        await(Gate.close())
+        await(Shooter.stop())
+    }
 }
