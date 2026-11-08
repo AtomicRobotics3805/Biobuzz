@@ -6,9 +6,9 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.IMU
 import dev.nextftc.hardware.actuators.NextMotor
+import dev.nextftc.hardware.sensors.NextDigitalSensor
 import dev.nextftc.hardware.sensors.NextIMU
 import dev.nextftc.robot.Mechanism
-import java.util.function.Supplier
 import kotlin.math.*
 
 
@@ -60,6 +60,30 @@ object Drivetrain : Mechanism {
         val backLeftPower: Double = (rotY - rotX + rx) / denominator
         val frontRightPower: Double = (rotY - rotX - rx) / denominator
         val backRightPower: Double = (rotY + rotX - rx) / denominator
+
+        frontLeft.throttle = (frontLeftPower)
+        backLeft.throttle = (backLeftPower)
+        frontRight.throttle = (frontRightPower)
+        backRight.throttle = (backRightPower)
+    }
+
+    /**
+     * Positive axial power moves bot forward, negative moves bot backward
+     *
+     * Positive lateral power moves bot right, negative moves bot left
+     *
+     * Positive angular power moves bot clockwise, negative moves bot counterclockwise
+     */
+
+    fun startAutoDrive(axialPower: Double = 0.0, lateralPower: Double = 0.0, angularPower: Double = 0.0) {
+        // Denominator is the largest motor power (absolute value) or 1
+        // This ensures all the powers maintain the same ratio,
+        // but only if at least one is out of the range [-1, 1]
+        val denominator: Double = (abs(axialPower) + abs(lateralPower) + abs(angularPower)).coerceAtLeast(1.0)
+        val frontLeftPower: Double = (axialPower + lateralPower + angularPower) / denominator
+        val backLeftPower: Double = (axialPower - lateralPower + angularPower) / denominator
+        val frontRightPower: Double = (axialPower - lateralPower - angularPower) / denominator
+        val backRightPower: Double = (axialPower + lateralPower - angularPower) / denominator
 
         frontLeft.throttle = (frontLeftPower)
         backLeft.throttle = (backLeftPower)

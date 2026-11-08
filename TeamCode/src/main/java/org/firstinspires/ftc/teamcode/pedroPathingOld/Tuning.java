@@ -1,8 +1,8 @@
-package org.firstinspires.ftc.teamcode.pedroPathing;
+package org.firstinspires.ftc.teamcode.pedroPathingOld;
 
 import com.pedropathing.tuning.autotune.Procedure;
 import com.pedropathing.tuning.autotune.Tuner;
-import org.firstinspires.ftc.teamcode.pedroPathing.procedures.MecanumTuner;
+import org.firstinspires.ftc.teamcode.pedroPathingOld.procedures.MecanumTuner;
 
 public class Tuning {
     @Tuner

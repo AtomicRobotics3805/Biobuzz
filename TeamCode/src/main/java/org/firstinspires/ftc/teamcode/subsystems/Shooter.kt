@@ -26,7 +26,7 @@ import kotlin.math.PI
 @Configurable
 object Shooter : Mechanism {
 
-    var targetRPM = 2600.0
+    var targetRPM = 2500.0 //TODO
 
     val motor = NextMotor("shooter")
 
